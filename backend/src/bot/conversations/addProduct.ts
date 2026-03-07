@@ -8,15 +8,15 @@ import { uploadImageFromUrl } from '../../config/cloudinary';
 import { env } from '../../config/env';
 
 export function setupAddProduct(bot: Bot<BotContext>) {
-  // /add command — start adding a product
+  // /add command
   bot.command('add', async (ctx) => {
     ctx.session.step = 'add_photos';
     ctx.session.tempProduct = { photos: [] };
     await ctx.reply(
-      '📸 <b>Add New Product</b>\n\nSend me the product photos (1-10).\nWhen done, tap "Done" below.',
+      '📸 <b>Shto Produkt te Ri</b>\n\nDergo fotot e produktit (1-10).\nKur te mbarosh, kliko "Perfundova" me poshte.',
       {
         parse_mode: 'HTML',
-        reply_markup: new InlineKeyboard().text('Done with photos', 'add_photos_done'),
+        reply_markup: new InlineKeyboard().text('Perfundova me fotot', 'add_photos_done'),
       }
     );
   });
@@ -28,7 +28,7 @@ export function setupAddProduct(bot: Bot<BotContext>) {
       return;
     }
 
-    const photo = ctx.message.photo[ctx.message.photo.length - 1]; // highest resolution
+    const photo = ctx.message.photo[ctx.message.photo.length - 1];
     const file = await ctx.api.getFile(photo.file_id);
     const fileUrl = `https://api.telegram.org/file/bot${env.telegramBotToken}/${file.file_path}`;
 
@@ -38,19 +38,19 @@ export function setupAddProduct(bot: Bot<BotContext>) {
         url: uploaded.url,
         cloudinaryId: uploaded.publicId,
       });
-      await ctx.reply(`Photo ${ctx.session.tempProduct.photos.length} uploaded ✓ Send more or tap Done.`, {
-        reply_markup: new InlineKeyboard().text('Done with photos', 'add_photos_done'),
+      await ctx.reply(`Foto ${ctx.session.tempProduct.photos.length} u ngarkua ✓ Dergo me shume ose kliko Perfundova.`, {
+        reply_markup: new InlineKeyboard().text('Perfundova me fotot', 'add_photos_done'),
       });
     } catch (err) {
       console.error('Photo upload error:', err);
-      await ctx.reply('Failed to upload photo. Try again.');
+      await ctx.reply('Ngarkimi i fotos deshtoi. Provo perseri.');
     }
   });
 
   // Done with photos → ask category
   bot.callbackQuery('add_photos_done', async (ctx) => {
     if (ctx.session.tempProduct.photos.length === 0) {
-      await ctx.answerCallbackQuery('Please send at least 1 photo first.');
+      await ctx.answerCallbackQuery('Dergo te pakten 1 foto fillimisht.');
       return;
     }
 
@@ -61,7 +61,7 @@ export function setupAddProduct(bot: Bot<BotContext>) {
       keyboard.text(cat.name, `add_cat:${cat.id}`).row();
     }
     await ctx.answerCallbackQuery();
-    await ctx.reply('📂 Select category:', { reply_markup: keyboard });
+    await ctx.reply('📂 Zgjidh kategorine:', { reply_markup: keyboard });
   });
 
   // Category selected → ask name
@@ -69,7 +69,7 @@ export function setupAddProduct(bot: Bot<BotContext>) {
     ctx.session.tempProduct.category_id = ctx.match![1];
     ctx.session.step = 'add_name';
     await ctx.answerCallbackQuery();
-    await ctx.reply('✏️ Product name:');
+    await ctx.reply('✏️ Emri i produktit:');
   });
 
   // Name → ask price
@@ -77,25 +77,25 @@ export function setupAddProduct(bot: Bot<BotContext>) {
     if (ctx.session.step === 'add_name') {
       ctx.session.tempProduct.name = ctx.message.text.trim();
       ctx.session.step = 'add_price';
-      await ctx.reply('💰 Price (number only, e.g. 250):');
+      await ctx.reply('💰 Cmimi (vetem numrin, p.sh. 250):');
       return;
     }
 
     if (ctx.session.step === 'add_price') {
       const price = parseFloat(ctx.message.text);
       if (isNaN(price) || price <= 0) {
-        await ctx.reply('Please enter a valid price number.');
+        await ctx.reply('Ju lutem shkruani nje cmim te vlefshem.');
         return;
       }
       ctx.session.tempProduct.price = price;
       ctx.session.step = 'add_material';
 
       const keyboard = new InlineKeyboard()
-        .text('Gold', 'add_mat:gold').text('Silver', 'add_mat:silver').row()
-        .text('Rose Gold', 'add_mat:rose_gold').text('Platinum', 'add_mat:platinum').row()
-        .text('Other', 'add_mat:other').text('Skip', 'add_mat:skip');
+        .text('Ar', 'add_mat:gold').text('Argjend', 'add_mat:silver').row()
+        .text('Ar Rose', 'add_mat:rose_gold').text('Platin', 'add_mat:platinum').row()
+        .text('Tjeter', 'add_mat:other').text('Kalo', 'add_mat:skip');
 
-      await ctx.reply('✨ Material:', { reply_markup: keyboard });
+      await ctx.reply('✨ Materiali:', { reply_markup: keyboard });
       return;
     }
 
@@ -117,8 +117,8 @@ export function setupAddProduct(bot: Bot<BotContext>) {
     ctx.session.step = 'add_description';
     await ctx.answerCallbackQuery();
 
-    const keyboard = new InlineKeyboard().text('Skip', 'add_desc_skip');
-    await ctx.reply('📝 Description (or tap Skip):', { reply_markup: keyboard });
+    const keyboard = new InlineKeyboard().text('Kalo', 'add_desc_skip');
+    await ctx.reply('📝 Pershkrimi (ose kliko Kalo):', { reply_markup: keyboard });
   });
 
   // Skip description
@@ -132,18 +132,22 @@ export function setupAddProduct(bot: Bot<BotContext>) {
     const tp = ctx.session.tempProduct;
     const category = tp.category_id ? await CategoryModel.findById(tp.category_id) : null;
 
-    let preview = `📋 <b>Preview</b>\n\n`;
-    preview += `📸 ${tp.photos.length} photo(s)\n`;
-    preview += `📂 ${category?.name || 'No category'}\n`;
+    const materialNames: Record<string, string> = {
+      gold: 'Ar', silver: 'Argjend', rose_gold: 'Ar Rose', platinum: 'Platin', other: 'Tjeter',
+    };
+
+    let preview = `📋 <b>Parashikimi</b>\n\n`;
+    preview += `📸 ${tp.photos.length} foto\n`;
+    preview += `📂 ${category?.name || 'Pa kategori'}\n`;
     preview += `✏️ <b>${tp.name}</b>\n`;
-    preview += `💰 $${tp.price}\n`;
-    if (tp.material && tp.material !== 'other') preview += `✨ ${tp.material}\n`;
+    preview += `💰 €${tp.price}\n`;
+    if (tp.material && tp.material !== 'other') preview += `✨ ${materialNames[tp.material] || tp.material}\n`;
     if (tp.description) preview += `📝 ${tp.description}\n`;
 
     ctx.session.step = 'add_confirm';
     const keyboard = new InlineKeyboard()
-      .text('✅ Publish', 'add_publish')
-      .text('❌ Cancel', 'add_cancel');
+      .text('✅ Publiko', 'add_publish')
+      .text('❌ Anulo', 'add_cancel');
 
     await ctx.reply(preview, { parse_mode: 'HTML', reply_markup: keyboard });
   }
@@ -170,15 +174,15 @@ export function setupAddProduct(bot: Bot<BotContext>) {
       ctx.session.step = null;
       ctx.session.tempProduct = { photos: [] };
 
-      await ctx.answerCallbackQuery('Published!');
+      await ctx.answerCallbackQuery('U publikua!');
       await ctx.editMessageText(
-        `✅ <b>${product.name}</b> published!\n\n` +
+        `✅ <b>${product.name}</b> u publikua!\n\n` +
         `${env.siteUrl}/products/${product.slug}`,
         { parse_mode: 'HTML' }
       );
     } catch (err) {
       console.error('Publish error:', err);
-      await ctx.answerCallbackQuery('Error publishing. Try again.');
+      await ctx.answerCallbackQuery('Gabim gjate publikimit. Provo perseri.');
     }
   });
 
@@ -186,7 +190,7 @@ export function setupAddProduct(bot: Bot<BotContext>) {
   bot.callbackQuery('add_cancel', async (ctx) => {
     ctx.session.step = null;
     ctx.session.tempProduct = { photos: [] };
-    await ctx.answerCallbackQuery('Cancelled');
-    await ctx.editMessageText('Product creation cancelled.');
+    await ctx.answerCallbackQuery('U anulua');
+    await ctx.editMessageText('Krijimi i produktit u anulua.');
   });
 }
