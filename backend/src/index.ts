@@ -34,12 +34,18 @@ async function main() {
   app.use(notFound);
   app.use(errorHandler);
 
-  // Start Telegram bot
-  const bot = createBot();
-  setBotInstance(bot);
-  bot.start({
-    onStart: () => console.log('Telegram bot started'),
-  });
+  // Start Telegram bot (skip if no valid token)
+  if (env.telegramBotToken && env.telegramBotToken !== 'placeholder') {
+    try {
+      const bot = createBot();
+      setBotInstance(bot);
+      bot.start({ onStart: () => console.log('Telegram bot started') });
+    } catch (err) {
+      console.warn('Telegram bot failed to start:', err);
+    }
+  } else {
+    console.log('Telegram bot skipped (no token configured)');
+  }
 
   // Start Express server
   app.listen(env.port, () => {
