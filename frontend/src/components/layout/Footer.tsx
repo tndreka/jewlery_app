@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="animate-marquee whitespace-nowrap">
           {Array.from({ length: 6 }).map((_, i) => (
             <span key={i} className="inline-block text-[10px] tracking-[0.5em] uppercase text-white/20 mx-12">
-              Argjendari Kadriu &mdash; Fine Gold Jewelry &mdash; Handcrafted in Kosovo &mdash;
+              Argjendari Kadriu &mdash; Fine Gold Jewelry &mdash; Handcrafted in Albania &mdash;
             </span>
           ))}
         </div>

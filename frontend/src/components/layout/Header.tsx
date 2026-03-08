@@ -18,6 +18,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [lang, setLang] = useState<'EN' | 'SQ'>('EN');
   const location = useLocation();
   const itemCount = cart.items.reduce((sum, i) => sum + i.quantity, 0);
 
@@ -91,7 +92,16 @@ export default function Header() {
           </nav>
 
           {/* Right — Actions */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4 md:gap-5">
+            {/* Language switcher */}
+            <button
+              onClick={() => setLang(lang === 'EN' ? 'SQ' : 'EN')}
+              className={`text-[10px] tracking-[0.15em] font-light ${textColor} transition-colors duration-500 hover:text-gold`}
+              aria-label="Switch language"
+            >
+              {lang === 'EN' ? 'SQ' : 'EN'}
+            </button>
+
             <button
               onClick={() => setSearchOpen(true)}
               className={`p-1 ${textColor} transition-colors duration-500`}
