@@ -183,7 +183,7 @@ export default function Home() {
       {/* Editorial divider */}
       <div className="flex items-center justify-center py-6">
         <div className="h-[1px] w-20 bg-border" />
-        <img src="/logo.jpeg" alt="" className="mx-6 h-8 object-contain invert opacity-20" />
+        <img src="/logo.png" alt="" className="mx-6 h-8 object-contain opacity-30" />
         <div className="h-[1px] w-20 bg-border" />
       </div>
 

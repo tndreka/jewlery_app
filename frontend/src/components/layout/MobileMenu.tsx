@@ -30,7 +30,7 @@ export default function MobileMenu({ isOpen, onClose }: Props) {
         }`}
       >
         <div className="flex justify-between items-center px-6 h-[60px]">
-          <img src="/logo.jpeg" alt="Argjendari Kadriu" className="h-8 object-contain invert" />
+          <img src="/logo.png" alt="Argjendari Kadriu" className="h-8 object-contain" />
           <button onClick={onClose} className="p-2 -mr-2" aria-label="Close menu">
             <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.3" fill="none">
               <line x1="18" y1="6" x2="6" y2="18" />

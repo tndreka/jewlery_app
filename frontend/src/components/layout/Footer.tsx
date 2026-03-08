@@ -18,7 +18,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
           {/* Brand */}
           <div className="md:col-span-2">
-            <img src="/logo.jpeg" alt="Argjendari Kadriu" className="h-16 md:h-20 object-contain" />
+            <img src="/logo.png" alt="Argjendari Kadriu" className="h-24 md:h-28 object-contain" />
             <p className="mt-6 text-[12px] leading-relaxed text-white/40 max-w-xs font-light">
               Timeless gold jewelry, meticulously crafted. Each piece carries the tradition of fine Albanian goldsmithing.
             </p>

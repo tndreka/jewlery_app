@@ -70,11 +70,9 @@ export default function Header() {
           {/* Center — Logo */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img
-              src="/logo.jpeg"
+              src="/logo.png"
               alt="Argjendari Kadriu"
-              className={`h-12 md:h-14 object-contain transition-all duration-500 ${
-                scrolled || !isHome ? 'invert' : ''
-              }`}
+              className="h-12 md:h-14 object-contain transition-all duration-500"
             />
           </Link>
 

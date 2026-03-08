@@ -44,7 +44,7 @@ export default function LoadingScreen({ onFinish }: Props) {
         {/* Logo — cinematic reveal from barely-there to full */}
         <div className="relative">
           <img
-            src="/logo.jpeg"
+            src="/logo.png"
             alt="Argjendari Kadriu"
             className="h-48 md:h-64 lg:h-72 object-contain"
             style={{
