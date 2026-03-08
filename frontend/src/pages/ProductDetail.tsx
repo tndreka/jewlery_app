@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useCart } from '../hooks/useCart';
+import { useI18n } from '../i18n';
 import type { Product } from '../types';
 
 export default function ProductDetail() {
@@ -11,6 +12,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
   const { addItem, loading: cartLoading } = useCart();
+  const { t } = useI18n();
 
   useEffect(() => {
     if (!slug) return;
@@ -39,9 +41,9 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <div className="pt-[70px] text-center py-32">
-        <p className="font-display text-[20px] font-light text-secondary italic">Product not found</p>
+        <p className="font-display text-[20px] font-light text-secondary italic">{t('product.notFound')}</p>
         <Link to="/shop" className="mt-6 inline-block link-reveal text-[10px] tracking-[0.2em] uppercase font-light text-secondary">
-          Back to Shop
+          {t('product.backToShop')}
         </Link>
       </div>
     );
@@ -53,9 +55,8 @@ export default function ProductDetail() {
   return (
     <div className="pt-[70px]">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-6 md:py-10">
-        {/* Breadcrumb */}
         <nav className="flex gap-2 text-[10px] tracking-[0.15em] text-secondary font-light mb-8 animate-fade-in">
-          <Link to="/shop" className="hover:text-primary transition-colors">Shop</Link>
+          <Link to="/shop" className="hover:text-primary transition-colors">{t('nav.shop')}</Link>
           <span className="text-border">/</span>
           {product.category_name && (
             <>
@@ -69,16 +70,10 @@ export default function ProductDetail() {
         </nav>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-16 lg:gap-24">
-          {/* Image gallery */}
           <div className="animate-fade-up">
-            {/* Main image */}
             <div className="aspect-[3/4] bg-surface overflow-hidden animate-scale-in">
               {currentImage ? (
-                <img
-                  src={currentImage}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-opacity duration-300"
-                />
+                <img src={currentImage} alt={product.name} className="w-full h-full object-cover transition-opacity duration-300" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-cream">
                   <span className="font-display text-[48px] text-border font-light">AK</span>
@@ -86,7 +81,6 @@ export default function ProductDetail() {
               )}
             </div>
 
-            {/* Thumbnail strip */}
             {images.length > 1 && (
               <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
                 {images.map((img, i) => (
@@ -106,7 +100,6 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Product info */}
           <div className="md:sticky md:top-[90px] md:self-start animate-fade-up" style={{ animationDelay: '150ms' }}>
             {product.category_name && (
               <Link
@@ -129,7 +122,7 @@ export default function ProductDetail() {
                 </>
               ) : (
                 <span className="text-[16px] font-light">
-                  {Number(product.price) > 0 ? `$${product.price}` : 'Price on request'}
+                  {Number(product.price) > 0 ? `$${product.price}` : t('product.priceOnRequest')}
                 </span>
               )}
             </div>
@@ -140,7 +133,6 @@ export default function ProductDetail() {
               </p>
             )}
 
-            {/* Add to bag */}
             <button
               onClick={handleAdd}
               disabled={!product.in_stock || cartLoading}
@@ -152,28 +144,21 @@ export default function ProductDetail() {
                     : 'bg-surface text-secondary cursor-not-allowed'
               }`}
             >
-              {added ? 'Added to Bag' : product.in_stock ? 'Add to Bag' : 'Sold Out'}
+              {added ? t('product.addedToBag') : product.in_stock ? t('product.addToBag') : t('product.soldOut')}
             </button>
 
-            {/* Details */}
             <div className="mt-10 border-t border-border">
               {product.material && (
-                <DetailRow label="Material" value={product.material.replace('_', ' ')} />
+                <DetailRow label={t('product.material')} value={product.material.replace('_', ' ')} />
               )}
               {product.gemstone && (
-                <DetailRow label="Gemstone" value={product.gemstone} />
+                <DetailRow label={t('product.gemstone')} value={product.gemstone} />
               )}
               {product.weight && (
-                <DetailRow label="Weight" value={product.weight} />
+                <DetailRow label={t('product.weight')} value={product.weight} />
               )}
-              <DetailRow
-                label="Shipping"
-                value="Complimentary shipping on all orders. Delivery within 3-5 business days."
-              />
-              <DetailRow
-                label="Care"
-                value="Store in a dry, cool place. Avoid direct contact with perfume, chemicals, and water."
-              />
+              <DetailRow label={t('product.shipping')} value={t('product.shippingDesc')} />
+              <DetailRow label={t('product.care')} value={t('product.careDesc')} />
             </div>
           </div>
         </div>
@@ -186,24 +171,13 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b border-border">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-4 group"
-      >
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-4 group">
         <span className="text-[10px] tracking-[0.2em] uppercase font-light">{label}</span>
-        <span
-          className={`text-secondary text-[16px] font-light transition-transform duration-300 ${
-            open ? 'rotate-45' : ''
-          }`}
-        >
+        <span className={`text-secondary text-[16px] font-light transition-transform duration-300 ${open ? 'rotate-45' : ''}`}>
           +
         </span>
       </button>
-      <div
-        className={`overflow-hidden transition-all duration-400 ${
-          open ? 'max-h-40 pb-4' : 'max-h-0'
-        }`}
-      >
+      <div className={`overflow-hidden transition-all duration-400 ${open ? 'max-h-40 pb-4' : 'max-h-0'}`}>
         <p className="text-[12px] text-secondary leading-[1.8] font-light capitalize">{value}</p>
       </div>
     </div>

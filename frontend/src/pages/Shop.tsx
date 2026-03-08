@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
+import { useI18n } from '../i18n';
 import type { Product, Category } from '../types';
 import ProductGrid from '../components/product/ProductGrid';
 
 export default function Shop() {
+  const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -38,21 +40,19 @@ export default function Shop() {
 
   return (
     <div className="pt-[70px]">
-      {/* Page header */}
       <div className="bg-cream py-14 md:py-20">
         <div className="text-center">
-          <p className="text-[10px] tracking-[0.5em] uppercase text-secondary font-light animate-fade-up">Collection</p>
+          <p className="text-[10px] tracking-[0.5em] uppercase text-secondary font-light animate-fade-up">{t('shop.collection')}</p>
           <h1 className="mt-3 font-display text-[32px] md:text-[48px] font-light tracking-[0.05em] animate-fade-up" style={{ animationDelay: '100ms' }}>
-            {activeCategory ? activeCategory.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'All Jewelry'}
+            {activeCategory ? activeCategory.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : t('shop.allJewelry')}
           </h1>
           <p className="mt-3 text-[11px] text-secondary font-light tracking-wide animate-fade-up" style={{ animationDelay: '200ms' }}>
-            {total} piece{total !== 1 ? 's' : ''}
+            {total} {total !== 1 ? t('shop.pieces') : t('shop.piece')}
           </p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-10 md:py-14">
-        {/* Category filter */}
         <div className="flex justify-center gap-2 md:gap-3 mb-12 flex-wrap">
           <button
             onClick={() => setCategory('')}
@@ -62,7 +62,7 @@ export default function Shop() {
                 : 'border-border text-secondary hover:border-primary hover:text-primary'
             }`}
           >
-            All
+            {t('shop.all')}
           </button>
           {categories.map(cat => (
             <button
@@ -81,7 +81,6 @@ export default function Shop() {
 
         <ProductGrid products={products} loading={loading} />
 
-        {/* Pagination */}
         {total > products.length + (page - 1) * limit && (
           <div className="text-center mt-16">
             <button
@@ -93,7 +92,7 @@ export default function Shop() {
               }}
               className="inline-block border border-primary text-primary px-12 py-3.5 text-[10px] tracking-[0.25em] uppercase font-light hover:bg-primary hover:text-white transition-all duration-400"
             >
-              Load More
+              {t('shop.loadMore')}
             </button>
           </div>
         )}

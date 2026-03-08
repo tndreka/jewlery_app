@@ -1,20 +1,23 @@
 import { Link } from 'react-router-dom';
+import { useI18n } from '../../i18n';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const links = [
-  { to: '/shop', label: 'Shop All' },
-  { to: '/category/rings', label: 'Rings' },
-  { to: '/category/necklaces', label: 'Necklaces' },
-  { to: '/category/bracelets', label: 'Bracelets' },
-  { to: '/category/earrings', label: 'Earrings' },
-  { to: '/category/sets', label: 'Sets' },
-];
-
 export default function MobileMenu({ isOpen, onClose }: Props) {
+  const { t } = useI18n();
+
+  const links = [
+    { to: '/shop', label: t('nav.shopAll') },
+    { to: '/category/rings', label: t('nav.rings') },
+    { to: '/category/necklaces', label: t('nav.necklaces') },
+    { to: '/category/bracelets', label: t('nav.bracelets') },
+    { to: '/category/earrings', label: t('nav.earrings') },
+    { to: '/category/sets', label: t('nav.sets') },
+  ];
+
   return (
     <>
       <div
@@ -60,7 +63,7 @@ export default function MobileMenu({ isOpen, onClose }: Props) {
             <a href="https://instagram.com/argjendarikadriu" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">
               Instagram
             </a>
-            <a href="https://wa.me/" className="hover:text-gold transition-colors">
+            <a href="https://wa.me/355696049949" className="hover:text-gold transition-colors">
               WhatsApp
             </a>
           </div>

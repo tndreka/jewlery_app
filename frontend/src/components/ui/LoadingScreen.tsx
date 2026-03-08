@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useI18n } from '../../i18n';
 
 interface Props {
   onFinish: () => void;
@@ -6,6 +7,7 @@ interface Props {
 
 export default function LoadingScreen({ onFinish }: Props) {
   const [phase, setPhase] = useState<'dark' | 'glow' | 'full' | 'exit'>('dark');
+  const { t } = useI18n();
 
   useEffect(() => {
     // Phase 1 → 2: Logo begins to emerge from darkness
@@ -98,7 +100,7 @@ export default function LoadingScreen({ onFinish }: Props) {
             transitionDelay: '350ms',
           }}
         >
-          Fine Jewelry
+          {t('loading.subtitle')}
         </p>
       </div>
     </div>

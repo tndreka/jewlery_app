@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../../hooks/useCart';
+import { useI18n } from '../../i18n';
 
 export default function CartDrawer() {
   const { cart, isOpen, setIsOpen, updateItem, removeItem, loading } = useCart();
+  const { t } = useI18n();
   const itemCount = cart.items.reduce((s, i) => s + i.quantity, 0);
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-500 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -15,16 +16,14 @@ export default function CartDrawer() {
         onClick={() => setIsOpen(false)}
       />
 
-      {/* Drawer */}
       <div
         className={`fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-6 h-[60px] border-b border-border">
           <h2 className="text-[10px] tracking-[0.3em] uppercase font-light">
-            Bag ({itemCount})
+            {t('cart.bag')} ({itemCount})
           </h2>
           <button onClick={() => setIsOpen(false)} className="p-2 -mr-2" aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.3" fill="none">
@@ -34,17 +33,16 @@ export default function CartDrawer() {
           </button>
         </div>
 
-        {/* Items */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
           {cart.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full">
-              <span className="font-display text-[36px] text-border font-light italic">Empty</span>
-              <p className="mt-3 text-[11px] text-secondary font-light tracking-wide">Your bag is waiting</p>
+              <span className="font-display text-[36px] text-border font-light italic">{t('cart.empty')}</span>
+              <p className="mt-3 text-[11px] text-secondary font-light tracking-wide">{t('cart.waiting')}</p>
               <button
                 onClick={() => setIsOpen(false)}
                 className="mt-6 border border-primary text-primary px-8 py-2.5 text-[10px] tracking-[0.2em] uppercase font-light hover:bg-primary hover:text-white transition-all duration-400"
               >
-                Continue Shopping
+                {t('cart.continueShopping')}
               </button>
             </div>
           ) : (
@@ -95,11 +93,10 @@ export default function CartDrawer() {
           )}
         </div>
 
-        {/* Footer */}
         {cart.items.length > 0 && (
           <div className="border-t border-border px-6 py-5">
             <div className="flex justify-between mb-5">
-              <span className="text-[10px] tracking-[0.2em] uppercase font-light">Subtotal</span>
+              <span className="text-[10px] tracking-[0.2em] uppercase font-light">{t('cart.subtotal')}</span>
               <span className="text-[14px] font-light">${cart.subtotal.toFixed(2)}</span>
             </div>
             <Link
@@ -107,7 +104,7 @@ export default function CartDrawer() {
               onClick={() => setIsOpen(false)}
               className="block w-full bg-primary text-white text-center py-4 text-[10px] tracking-[0.3em] uppercase font-light hover:bg-gold transition-colors duration-400"
             >
-              Checkout
+              {t('cart.checkout')}
             </Link>
           </div>
         )}

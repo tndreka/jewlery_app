@@ -1,28 +1,29 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../../hooks/useCart';
+import { useI18n } from '../../i18n';
 import MobileMenu from './MobileMenu';
 import SearchOverlay from './SearchOverlay';
 
-const navLinks = [
-  { to: '/shop', label: 'Shop' },
-  { to: '/category/rings', label: 'Rings' },
-  { to: '/category/necklaces', label: 'Necklaces' },
-  { to: '/category/bracelets', label: 'Bracelets' },
-  { to: '/category/earrings', label: 'Earrings' },
-  { to: '/category/sets', label: 'Sets' },
-];
-
 export default function Header() {
   const { cart, setIsOpen } = useCart();
+  const { lang, setLang, t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [lang, setLang] = useState<'EN' | 'SQ'>('EN');
   const location = useLocation();
   const itemCount = cart.items.reduce((sum, i) => sum + i.quantity, 0);
 
   const isHome = location.pathname === '/';
+
+  const navLinks = [
+    { to: '/shop', label: t('nav.shop') },
+    { to: '/category/rings', label: t('nav.rings') },
+    { to: '/category/necklaces', label: t('nav.necklaces') },
+    { to: '/category/bracelets', label: t('nav.bracelets') },
+    { to: '/category/earrings', label: t('nav.earrings') },
+    { to: '/category/sets', label: t('nav.sets') },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -39,9 +40,7 @@ export default function Header() {
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerBg}`}>
-        {/* Top bar */}
         <div className="flex items-center justify-between px-6 md:px-12 h-[60px] md:h-[70px]">
-          {/* Left — Hamburger */}
           <button
             onClick={() => setMenuOpen(true)}
             className={`md:hidden p-2 -ml-2 ${textColor} transition-colors duration-500`}
@@ -54,7 +53,6 @@ export default function Header() {
             </svg>
           </button>
 
-          {/* Left nav — Desktop */}
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.slice(0, 3).map(link => (
               <Link
@@ -67,7 +65,6 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Center — Logo */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img
               src="/logo.png"
@@ -76,7 +73,6 @@ export default function Header() {
             />
           </Link>
 
-          {/* Right nav — Desktop */}
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.slice(3).map(link => (
               <Link
@@ -89,15 +85,13 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Right — Actions */}
           <div className="flex items-center gap-4 md:gap-5">
-            {/* Language switcher */}
             <button
-              onClick={() => setLang(lang === 'EN' ? 'SQ' : 'EN')}
+              onClick={() => setLang(lang === 'EN' ? 'AL' : 'EN')}
               className={`text-[10px] tracking-[0.15em] font-light ${textColor} transition-colors duration-500 hover:text-gold`}
               aria-label="Switch language"
             >
-              {lang === 'EN' ? 'SQ' : 'EN'}
+              {lang === 'EN' ? 'AL' : 'EN'}
             </button>
 
             <button
