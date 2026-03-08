@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 import { env } from './config/env';
 import { createBot } from './bot/index';
 import { errorHandler, notFound } from './middleware/errorHandler';
@@ -14,10 +15,13 @@ async function main() {
   const app = express();
 
   // Middleware
-  app.use(helmet());
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cors({ origin: env.siteUrl, credentials: true }));
   app.use(express.json());
   app.use(cookieParser());
+
+  // Serve uploaded images statically
+  app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads')));
 
   // Routes
   app.use('/api/products', productRoutes);

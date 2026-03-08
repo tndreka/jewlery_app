@@ -2,47 +2,75 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer className="bg-primary text-white mt-20">
-      <div className="max-w-7xl mx-auto px-5 md:px-10 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+    <footer className="bg-primary text-white mt-0">
+      {/* Marquee strip */}
+      <div className="overflow-hidden py-5 border-b border-white/10">
+        <div className="animate-marquee whitespace-nowrap">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <span key={i} className="inline-block text-[10px] tracking-[0.5em] uppercase text-white/20 mx-12">
+              Argjendari Kadriu &mdash; Fine Gold Jewelry &mdash; Handcrafted in Kosovo &mdash;
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
           {/* Brand */}
-          <div>
-            <h3 className="text-[14px] tracking-[0.25em] uppercase font-light mb-4">
-              Argjendari Kadriu
-            </h3>
-            <p className="text-[13px] text-white/60 leading-relaxed">
-              Handcrafted jewelry with timeless elegance. Every piece tells a story.
+          <div className="md:col-span-2">
+            <img src="/logo.jpeg" alt="Argjendari Kadriu" className="h-16 md:h-20 object-contain" />
+            <p className="mt-6 text-[12px] leading-relaxed text-white/40 max-w-xs font-light">
+              Timeless gold jewelry, meticulously crafted. Each piece carries the tradition of fine Albanian goldsmithing.
             </p>
           </div>
 
-          {/* Links */}
+          {/* Collections */}
           <div>
-            <h4 className="text-[11px] tracking-[0.2em] uppercase mb-4 text-white/40">Shop</h4>
-            <nav className="flex flex-col gap-3 text-[13px] text-white/60">
-              <Link to="/shop" className="hover:text-white transition-colors">All Products</Link>
-              <Link to="/category/rings" className="hover:text-white transition-colors">Rings</Link>
-              <Link to="/category/necklaces" className="hover:text-white transition-colors">Necklaces</Link>
-              <Link to="/category/bracelets" className="hover:text-white transition-colors">Bracelets</Link>
-              <Link to="/category/earrings" className="hover:text-white transition-colors">Earrings</Link>
+            <h4 className="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-6">Collections</h4>
+            <nav className="flex flex-col gap-3">
+              {['rings', 'necklaces', 'bracelets', 'earrings', 'sets'].map(cat => (
+                <Link
+                  key={cat}
+                  to={`/category/${cat}`}
+                  className="text-[12px] font-light text-white/50 hover:text-gold transition-colors capitalize"
+                >
+                  {cat}
+                </Link>
+              ))}
             </nav>
           </div>
 
-          {/* Contact */}
+          {/* Connect */}
           <div>
-            <h4 className="text-[11px] tracking-[0.2em] uppercase mb-4 text-white/40">Contact</h4>
-            <div className="flex flex-col gap-3 text-[13px] text-white/60">
-              <a href="https://instagram.com/argjendarikadriu" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <h4 className="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-6">Connect</h4>
+            <nav className="flex flex-col gap-3">
+              <a
+                href="https://instagram.com/argjendarikadriu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[12px] font-light text-white/50 hover:text-gold transition-colors"
+              >
                 Instagram
               </a>
-              <a href="https://wa.me/" className="hover:text-white transition-colors">
+              <a href="https://wa.me/" className="text-[12px] font-light text-white/50 hover:text-gold transition-colors">
                 WhatsApp
               </a>
-            </div>
+              <span className="text-[12px] font-light text-white/50">
+                Bulevardi Zogu i Pare
+              </span>
+            </nav>
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-12 pt-8 text-[11px] text-white/30 tracking-[0.1em]">
-          &copy; {new Date().getFullYear()} Argjendari Kadriu. All rights reserved.
+        <div className="h-[1px] bg-white/10 mt-16 mb-8" />
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <p className="text-[10px] text-white/20 tracking-[0.15em]">
+            &copy; {new Date().getFullYear()} Argjendari Kadriu. All rights reserved.
+          </p>
+          <p className="text-[10px] text-white/20 tracking-[0.15em]">
+            Handcrafted with care
+          </p>
         </div>
       </div>
     </footer>

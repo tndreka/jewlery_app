@@ -9,42 +9,50 @@ export default function ProductCard({ product }: Props) {
   const displayPrice = product.sale_price || product.price;
 
   return (
-    <Link to={`/products/${product.slug}`} className="group">
-      <div className="aspect-[3/4] bg-surface overflow-hidden relative">
+    <Link to={`/products/${product.slug}`} className="group block">
+      <div className="aspect-[3/4] bg-surface overflow-hidden relative img-zoom">
         {product.image_url ? (
           <img
             src={product.image_url}
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-border">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
+          <div className="w-full h-full flex items-center justify-center bg-cream">
+            <span className="font-display text-[32px] text-border font-light">AK</span>
           </div>
         )}
+
         {!product.in_stock && (
-          <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-            <span className="text-[11px] tracking-[0.2em] uppercase text-secondary">Sold Out</span>
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+            <span className="text-[10px] tracking-[0.3em] uppercase text-secondary">Sold Out</span>
+          </div>
+        )}
+
+        {product.sale_price && (
+          <div className="absolute top-3 left-3">
+            <span className="bg-primary text-white text-[9px] tracking-[0.15em] uppercase px-2.5 py-1">
+              Sale
+            </span>
           </div>
         )}
       </div>
-      <div className="mt-3 space-y-0.5">
-        <p className="text-[11px] md:text-[12px] tracking-[0.12em] uppercase leading-tight">
+
+      <div className="mt-4 space-y-1">
+        <p className="text-[11px] tracking-[0.12em] uppercase font-light leading-snug group-hover:text-gold transition-colors duration-300">
           {product.name}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {product.sale_price ? (
             <>
-              <span className="text-[12px] text-secondary line-through">${product.price}</span>
-              <span className="text-[12px]">${displayPrice}</span>
+              <span className="text-[11px] text-secondary line-through font-light">${product.price}</span>
+              <span className="text-[11px] text-gold font-light">${displayPrice}</span>
             </>
           ) : (
-            <span className="text-[12px] text-secondary">${displayPrice}</span>
+            <span className="text-[11px] text-secondary font-light">
+              {Number(displayPrice) > 0 ? `$${displayPrice}` : 'Price on request'}
+            </span>
           )}
         </div>
       </div>

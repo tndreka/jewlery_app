@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { Product } from '../types';
 import ProductGrid from '../components/product/ProductGrid';
@@ -12,7 +12,7 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
-    api.getCategoryProducts(slug)
+    api.getCategoryProducts(slug, { limit: '100' })
       .then(data => setProducts(data.products))
       .finally(() => setLoading(false));
   }, [slug]);
@@ -20,9 +20,25 @@ export default function CategoryPage() {
   const title = slug?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || '';
 
   return (
-    <div className="pt-24 md:pt-28">
-      <div className="max-w-7xl mx-auto px-5 md:px-10">
-        <h1 className="text-center text-[13px] tracking-[0.25em] uppercase mb-10">{title}</h1>
+    <div className="pt-[70px]">
+      {/* Category header */}
+      <div className="bg-cream py-14 md:py-20">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-3 text-[10px] tracking-[0.2em] uppercase text-secondary font-light mb-3 animate-fade-up">
+            <Link to="/shop" className="hover:text-primary transition-colors">Shop</Link>
+            <span className="text-border">/</span>
+            <span className="text-primary">{title}</span>
+          </div>
+          <h1 className="font-display text-[32px] md:text-[48px] font-light tracking-[0.05em] animate-fade-up" style={{ animationDelay: '100ms' }}>
+            {title}
+          </h1>
+          <p className="mt-3 text-[11px] text-secondary font-light tracking-wide animate-fade-up" style={{ animationDelay: '200ms' }}>
+            {products.length} piece{products.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12 py-10 md:py-14">
         <ProductGrid products={products} loading={loading} />
       </div>
     </div>

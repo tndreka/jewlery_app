@@ -1,81 +1,102 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
-import type { Product } from '../types';
+import type { Product, Category } from '../types';
 import ProductGrid from '../components/product/ProductGrid';
-
-const materials = ['gold', 'silver', 'rose_gold', 'platinum'];
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const activeMaterial = searchParams.get('material') || '';
+  const activeCategory = searchParams.get('category') || '';
   const page = parseInt(searchParams.get('page') || '1');
   const limit = 24;
 
   useEffect(() => {
+    api.getCategories().then(cats => setCategories(cats.filter(c => c.product_count > 0)));
+  }, []);
+
+  useEffect(() => {
     setLoading(true);
     const params: Record<string, string> = { limit: String(limit), offset: String((page - 1) * limit) };
-    if (activeMaterial) params.material = activeMaterial;
+    if (activeCategory) params.category = activeCategory;
     api.getProducts(params)
       .then(data => { setProducts(data.products); setTotal(data.total); })
       .finally(() => setLoading(false));
-  }, [activeMaterial, page]);
+  }, [activeCategory, page]);
 
-  const setMaterial = (mat: string) => {
+  const setCategory = (cat: string) => {
     const next = new URLSearchParams(searchParams);
-    if (mat === activeMaterial) next.delete('material');
-    else next.set('material', mat);
+    if (cat === activeCategory) next.delete('category');
+    else next.set('category', cat);
     next.delete('page');
     setSearchParams(next);
   };
 
   return (
-    <div className="pt-24 md:pt-28">
-      <div className="max-w-7xl mx-auto px-5 md:px-10">
-        <h1 className="text-center text-[13px] tracking-[0.25em] uppercase mb-8">All Products</h1>
+    <div className="pt-[70px]">
+      {/* Page header */}
+      <div className="bg-cream py-14 md:py-20">
+        <div className="text-center">
+          <p className="text-[10px] tracking-[0.5em] uppercase text-secondary font-light animate-fade-up">Collection</p>
+          <h1 className="mt-3 font-display text-[32px] md:text-[48px] font-light tracking-[0.05em] animate-fade-up" style={{ animationDelay: '100ms' }}>
+            {activeCategory ? activeCategory.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'All Jewelry'}
+          </h1>
+          <p className="mt-3 text-[11px] text-secondary font-light tracking-wide animate-fade-up" style={{ animationDelay: '200ms' }}>
+            {total} piece{total !== 1 ? 's' : ''}
+          </p>
+        </div>
+      </div>
 
-        {/* Filters */}
-        <div className="flex justify-center gap-3 mb-10 flex-wrap">
-          {materials.map(mat => (
+      <div className="max-w-7xl mx-auto px-6 md:px-12 py-10 md:py-14">
+        {/* Category filter */}
+        <div className="flex justify-center gap-2 md:gap-3 mb-12 flex-wrap">
+          <button
+            onClick={() => setCategory('')}
+            className={`px-5 py-2 text-[10px] tracking-[0.2em] uppercase font-light border transition-all duration-300 ${
+              !activeCategory
+                ? 'bg-primary text-white border-primary'
+                : 'border-border text-secondary hover:border-primary hover:text-primary'
+            }`}
+          >
+            All
+          </button>
+          {categories.map(cat => (
             <button
-              key={mat}
-              onClick={() => setMaterial(mat)}
-              className={`px-4 py-1.5 text-[10px] tracking-[0.2em] uppercase border transition-colors ${
-                activeMaterial === mat
+              key={cat.id}
+              onClick={() => setCategory(cat.slug)}
+              className={`px-5 py-2 text-[10px] tracking-[0.2em] uppercase font-light border transition-all duration-300 ${
+                activeCategory === cat.slug
                   ? 'bg-primary text-white border-primary'
                   : 'border-border text-secondary hover:border-primary hover:text-primary'
               }`}
             >
-              {mat.replace('_', ' ')}
+              {cat.name}
             </button>
           ))}
         </div>
 
         <ProductGrid products={products} loading={loading} />
 
-        {/* Load more */}
+        {/* Pagination */}
         {total > products.length + (page - 1) * limit && (
-          <div className="text-center mt-12">
+          <div className="text-center mt-16">
             <button
               onClick={() => {
                 const next = new URLSearchParams(searchParams);
                 next.set('page', String(page + 1));
                 setSearchParams(next);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="text-[11px] tracking-[0.2em] uppercase underline underline-offset-4 text-secondary hover:text-primary"
+              className="inline-block border border-primary text-primary px-12 py-3.5 text-[10px] tracking-[0.25em] uppercase font-light hover:bg-primary hover:text-white transition-all duration-400"
             >
               Load More
             </button>
           </div>
         )}
-
-        <p className="text-center text-[11px] text-secondary mt-6 tracking-wide">
-          {total} product{total !== 1 ? 's' : ''}
-        </p>
       </div>
     </div>
   );

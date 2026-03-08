@@ -14,53 +14,58 @@ export default function OrderConfirmation() {
 
   if (!order) {
     return (
-      <div className="pt-24 flex justify-center py-20">
-        <div className="w-6 h-6 border border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="pt-[70px] flex justify-center py-32">
+        <div className="w-5 h-5 border border-gold border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="pt-24 md:pt-28">
-      <div className="max-w-lg mx-auto px-5 md:px-10 text-center">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-surface flex items-center justify-center">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="2">
+    <div className="pt-[70px]">
+      <div className="max-w-lg mx-auto px-6 md:px-12 py-16 md:py-24 text-center">
+        {/* Success mark */}
+        <div className="w-14 h-14 mx-auto mb-6 rounded-full border border-gold/30 flex items-center justify-center animate-scale-in">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b8976a" strokeWidth="1.5">
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
 
-        <h1 className="text-[15px] tracking-[0.2em] uppercase mb-2">Order Confirmed</h1>
-        <p className="text-secondary text-[13px]">Thank you for your order.</p>
+        <h1 className="font-display text-[24px] md:text-[32px] font-light tracking-[0.05em] animate-fade-up">
+          Thank You
+        </h1>
+        <p className="mt-2 text-[12px] text-secondary font-light tracking-wide animate-fade-up" style={{ animationDelay: '100ms' }}>
+          Your order has been confirmed
+        </p>
 
-        <div className="bg-surface p-6 mt-8 text-left">
-          <p className="text-[11px] tracking-[0.15em] uppercase text-secondary mb-3">Order Details</p>
-          <p className="text-[14px] font-medium">#{order.order_number}</p>
-          <p className="text-[13px] text-secondary mt-1 capitalize">Status: {order.status}</p>
+        <div className="bg-cream p-8 mt-10 text-left animate-fade-up" style={{ animationDelay: '200ms' }}>
+          <p className="text-[10px] tracking-[0.3em] uppercase text-secondary font-light mb-4">Order Details</p>
+          <p className="font-display text-[18px] font-light">#{order.order_number}</p>
+          <p className="text-[11px] text-secondary font-light mt-1 capitalize">{order.status}</p>
 
-          <div className="mt-4 space-y-2">
+          <div className="mt-5 space-y-2.5">
             {order.items?.map((item, i) => (
-              <div key={i} className="flex justify-between text-[13px]">
+              <div key={i} className="flex justify-between text-[12px] font-light">
                 <span>{item.product_name} &times; {item.quantity}</span>
                 <span>${item.unit_price}</span>
               </div>
             ))}
           </div>
 
-          <div className="border-t border-border mt-4 pt-3 flex justify-between text-[14px] font-medium">
-            <span>Total</span>
-            <span>${order.total}</span>
+          <div className="border-t border-border mt-5 pt-4 flex justify-between">
+            <span className="text-[12px] font-light">Total</span>
+            <span className="font-display text-[16px]">${order.total}</span>
           </div>
 
           {order.tracking_number && (
-            <p className="mt-4 text-[13px]">
-              Tracking: <span className="font-medium">{order.tracking_number}</span>
+            <p className="mt-4 text-[12px] font-light">
+              Tracking: <span className="text-gold">{order.tracking_number}</span>
             </p>
           )}
         </div>
 
         <Link
           to="/shop"
-          className="inline-block mt-8 text-[11px] tracking-[0.2em] uppercase underline underline-offset-4 text-secondary hover:text-primary"
+          className="mt-10 inline-block border border-primary text-primary px-10 py-3.5 text-[10px] tracking-[0.25em] uppercase font-light hover:bg-primary hover:text-white transition-all duration-500"
         >
           Continue Shopping
         </Link>
