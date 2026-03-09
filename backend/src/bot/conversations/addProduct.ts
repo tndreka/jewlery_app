@@ -4,7 +4,7 @@ import type { BotContext } from '../index';
 import { ProductModel } from '../../models/product';
 import { CategoryModel } from '../../models/category';
 import { ImageModel } from '../../models/image';
-import { uploadImageFromUrl } from '../../config/cloudinary';
+import { uploadImageFromUrl } from '../../config/localUpload';
 import { env } from '../../config/env';
 
 export function setupAddProduct(bot: Bot<BotContext>) {

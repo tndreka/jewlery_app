@@ -3,8 +3,7 @@ import type { Bot } from 'grammy';
 import type { BotContext } from '../index';
 import { ProductModel } from '../../models/product';
 import { ImageModel } from '../../models/image';
-import { uploadImageFromUrl } from '../../config/cloudinary';
-import { deleteImage } from '../../config/cloudinary';
+import { uploadImageFromUrl, deleteLocalImage } from '../../config/localUpload';
 import { env } from '../../config/env';
 
 export function setupEditProduct(bot: Bot<BotContext>) {
@@ -149,7 +148,7 @@ export function setupEditProduct(bot: Bot<BotContext>) {
     const imageId = ctx.match![1];
     const image = await ImageModel.delete(imageId);
     if (image?.cloudinary_id) {
-      await deleteImage(image.cloudinary_id).catch(console.error);
+      await deleteLocalImage(image.cloudinary_id).catch(console.error);
     }
     await ctx.answerCallbackQuery('Foto u hoq');
     await ctx.editMessageText('Foto u hoq. Zgjidh nje tjeter ose kliko Perfundova.', {
