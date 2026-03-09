@@ -246,9 +246,15 @@ export function setupCommands(bot: Bot<BotContext>) {
   });
 
   bot.callbackQuery(/^del_confirm:(.+)$/, async (ctx) => {
-    await ProductModel.delete(ctx.match![1]);
-    await ctx.answerCallbackQuery('U fshi');
-    await ctx.reply('✅ Produkti u fshi.');
+    try {
+      await ProductModel.delete(ctx.match![1]);
+      await ctx.answerCallbackQuery('U fshi');
+      await ctx.reply('✅ Produkti u fshi.');
+    } catch (err) {
+      console.error('Delete error:', err);
+      await ctx.answerCallbackQuery('Gabim gjatë fshirjes');
+      await ctx.reply('❌ Fshirja dështoi. Provo përsëri.');
+    }
   });
 
   // ============================================================
