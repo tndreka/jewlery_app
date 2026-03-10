@@ -1,0 +1,65 @@
+services:
+  backend:
+    build: ./backend
+    container_name: jewelry-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://jewelry:${DB_PASSWORD:-changeme}@db:5432/jewelry_db
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_OWNER_CHAT_ID: ${TELEGRAM_OWNER_CHAT_ID}
+      PORT: "3001"
+      NODE_ENV: production
+      API_SECRET: ${API_SECRET:-change_this_secret}
+      SITE_URL: http://${HOST_IP:-164.92.229.200}:8080
+    volumes:
+      - uploads:/app/public/uploads
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: jewelry-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:16-alpine
+    container_name: jewelry-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: jewelry_db
+      POSTGRES_USER: jewelry
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  db-backup:
+    image: postgres:16-alpine
+    container_name: jewelry-db-backup
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PGHOST: db
+      PGUSER: jewelry
+      PGPASSWORD: ${DB_PASSWORD:-changeme}
+      PGDATABASE: jewelry_db
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      /bin/sh -c 'while true; do
+        pg_dump -Fc > /backups/jewelry_db_$$(date +%Y%m%d_%H%M%S).dump;
+        find /backups -name "*.dump" -mtime +7 -delete;
+        sleep 86400;
+      done'
+
+volumes:
+  pgdata:
+  uploads:
