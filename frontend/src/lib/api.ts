@@ -1,4 +1,4 @@
-import type { Product, Category, Cart, Order } from '../types';
+import type { Product, Category, Cart, CartItem, Order } from '../types';
 
 const BASE = '/api';
 

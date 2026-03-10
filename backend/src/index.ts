@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { env } from './config/env';
 import { createBot } from './bot/index';
@@ -14,11 +15,19 @@ import orderRoutes, { setBotInstance } from './routes/orders';
 async function main() {
   const app = express();
 
+  // Trust proxy (behind nginx)
+  app.set('trust proxy', 1);
+
   // Middleware
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cors({ origin: env.siteUrl, credentials: true }));
-  app.use(express.json());
+  app.use(express.json({ limit: '10kb' }));
   app.use(cookieParser());
+
+  // Rate limiting
+  app.use('/api/', rateLimit({ windowMs: 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));
+  app.use('/api/orders', rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false }));
+  app.use('/api/cart', rateLimit({ windowMs: 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false }));
 
   // Serve uploaded images statically
   app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads')));

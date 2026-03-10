@@ -1,33 +1,90 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { api } from '../lib/api';
 import { useCart } from '../hooks/useCart';
+import { useToast } from '../components/ui/Toast';
 import { useI18n } from '../i18n';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import type { Product } from '../types';
+
+const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [added, setAdded] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
+  const [zoomOrigin, setZoomOrigin] = useState('center center');
+  const [mobileZoomScale, setMobileZoomScale] = useState(1);
+  const [mobileZoomPos, setMobileZoomPos] = useState({ x: 0, y: 0 });
   const { addItem, loading: cartLoading } = useCart();
+  const { showToast } = useToast();
   const { t } = useI18n();
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const initialPinchDistance = useRef(0);
+  const initialScale = useRef(1);
+  const lastTouchPos = useRef({ x: 0, y: 0 });
+  const lastTapTime = useRef(0);
+  const touchStartX = useRef(0);
+
+  const detailsRef = useScrollAnimation<HTMLDivElement>({ animation: 'fadeUp', delay: 0.15 });
+
+  // Image swipe for mobile gallery
+  const imagesForSwipe = product?.images || [];
+
+  const handleImageSwipe = useCallback((e: React.TouchEvent) => {
+    if (mobileZoomScale > 1) return;
+    touchStartX.current = e.touches[0].clientX;
+  }, [mobileZoomScale]);
+
+  const handleImageSwipeEnd = useCallback((e: React.TouchEvent) => {
+    if (mobileZoomScale > 1 || imagesForSwipe.length <= 1) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff < 0 && selectedImage < imagesForSwipe.length - 1) {
+        setSelectedImage(prev => prev + 1);
+      } else if (diff > 0 && selectedImage > 0) {
+        setSelectedImage(prev => prev - 1);
+      }
+    }
+  }, [mobileZoomScale, imagesForSwipe.length, selectedImage]);
 
   useEffect(() => {
     if (!slug) return;
-    setLoading(true);
-    setSelectedImage(0);
-    api.getProduct(slug)
-      .then(setProduct)
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    (async () => {
+      const data = await api.getProduct(slug);
+      if (!cancelled) { setProduct(data); setSelectedImage(0); setLoading(false); }
+    })();
+    return () => { cancelled = true; };
   }, [slug]);
 
   const handleAdd = async () => {
     if (!product) return;
     await addItem(product.id);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    showToast(t('product.addedToBag'));
+  };
+
+  // Desktop: click to zoom
+  const handleZoomClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isTouchDevice()) return;
+    if (!zoomed) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      setZoomOrigin(`${x}% ${y}%`);
+    }
+    setZoomed(!zoomed);
+  };
+
+  const handleZoomMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isTouchDevice() || !zoomed) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomOrigin(`${x}% ${y}%`);
   };
 
   if (loading) {
@@ -49,11 +106,68 @@ export default function ProductDetail() {
     );
   }
 
-  const images = product.images || [];
-  const currentImage = images[selectedImage]?.url || product.image_url;
+  const productImages = product.images || [];
+  const currentImage = productImages[selectedImage]?.url || product.image_url;
+
+  // Mobile pinch-to-zoom handlers
+  const handlePinchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialPinchDistance.current = Math.hypot(dx, dy);
+      initialScale.current = mobileZoomScale;
+    } else if (e.touches.length === 1 && mobileZoomScale > 1) {
+      lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handlePinchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const distance = Math.hypot(dx, dy);
+      const scale = Math.min(3, Math.max(1, initialScale.current * (distance / initialPinchDistance.current)));
+      setMobileZoomScale(scale);
+    } else if (e.touches.length === 1 && mobileZoomScale > 1) {
+      // Pan while zoomed
+      const dx = e.touches[0].clientX - lastTouchPos.current.x;
+      const dy = e.touches[0].clientY - lastTouchPos.current.y;
+      lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      setMobileZoomPos(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+    }
+  };
+
+  const handlePinchEnd = () => {
+    if (mobileZoomScale <= 1.1) {
+      setMobileZoomScale(1);
+      setMobileZoomPos({ x: 0, y: 0 });
+    }
+  };
+
+  // Double tap to zoom on mobile
+  const handleDoubleTap = (e: React.TouchEvent) => {
+    const now = Date.now();
+    if (now - lastTapTime.current < 300) {
+      e.preventDefault();
+      if (mobileZoomScale > 1) {
+        setMobileZoomScale(1);
+        setMobileZoomPos({ x: 0, y: 0 });
+      } else {
+        setMobileZoomScale(2.5);
+      }
+    }
+    lastTapTime.current = now;
+  };
 
   return (
     <div className="pt-[70px]">
+      <Helmet>
+        <title>{product.name} | Argjendari Kadriu</title>
+        <meta name="description" content={product.description || `${product.name} — Handcrafted gold jewelry by Argjendari Kadriu.`} />
+        {currentImage && <meta property="og:image" content={currentImage} />}
+      </Helmet>
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-6 md:py-10">
         <nav className="flex gap-2 text-[10px] tracking-[0.15em] text-secondary font-light mb-8 animate-fade-in">
           <Link to="/shop" className="hover:text-primary transition-colors">{t('nav.shop')}</Link>
@@ -71,9 +185,50 @@ export default function ProductDetail() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-16 lg:gap-24">
           <div className="animate-fade-up">
-            <div className="aspect-[3/4] bg-surface overflow-hidden animate-scale-in">
+            {/* Image indicators for mobile */}
+            {productImages.length > 1 && (
+              <div className="flex justify-center gap-1.5 mb-3 md:hidden">
+                {productImages.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-[2px] rounded-full transition-all duration-300 ${
+                      i === selectedImage ? 'w-6 bg-gold' : 'w-2 bg-border'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+            <div
+              ref={imageContainerRef}
+              className={`aspect-[3/4] bg-surface overflow-hidden product-zoom-container ${zoomed ? 'zoomed' : ''}`}
+              onClick={handleZoomClick}
+              onMouseMove={handleZoomMove}
+              onMouseLeave={() => setZoomed(false)}
+              onTouchStart={(e) => {
+                handlePinchStart(e);
+                handleImageSwipe(e);
+                handleDoubleTap(e);
+              }}
+              onTouchMove={handlePinchMove}
+              onTouchEnd={(e) => {
+                handlePinchEnd();
+                handleImageSwipeEnd(e);
+              }}
+              style={{ touchAction: mobileZoomScale > 1 ? 'none' : 'pan-y' }}
+            >
               {currentImage ? (
-                <img src={currentImage} alt={product.name} className="w-full h-full object-cover transition-opacity duration-300" />
+                <img
+                  src={currentImage}
+                  alt={product.name}
+                  className="w-full h-full object-cover transition-transform duration-200"
+                  style={{
+                    transformOrigin: isTouchDevice() ? 'center center' : zoomOrigin,
+                    transform: isTouchDevice()
+                      ? `scale(${mobileZoomScale}) translate(${mobileZoomPos.x / mobileZoomScale}px, ${mobileZoomPos.y / mobileZoomScale}px)`
+                      : undefined,
+                  }}
+                  draggable={false}
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-cream">
                   <span className="font-display text-[48px] text-border font-light">AK</span>
@@ -81,12 +236,12 @@ export default function ProductDetail() {
               )}
             </div>
 
-            {images.length > 1 && (
-              <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-                {images.map((img, i) => (
+            {productImages.length > 1 && (
+              <div className="hidden md:flex gap-2 mt-3 overflow-x-auto pb-1">
+                {productImages.map((img, i) => (
                   <button
                     key={img.id}
-                    onClick={() => setSelectedImage(i)}
+                    onClick={() => { setSelectedImage(i); setZoomed(false); setMobileZoomScale(1); setMobileZoomPos({ x: 0, y: 0 }); }}
                     className={`w-16 h-20 shrink-0 overflow-hidden transition-all duration-300 ${
                       selectedImage === i
                         ? 'ring-1 ring-primary ring-offset-2'
@@ -98,9 +253,27 @@ export default function ProductDetail() {
                 ))}
               </div>
             )}
+            {/* Mobile: scrollable thumbnail strip */}
+            {productImages.length > 1 && (
+              <div className="flex md:hidden gap-2 mt-3 overflow-x-auto pb-1 snap-x snap-mandatory">
+                {productImages.map((img, i) => (
+                  <button
+                    key={img.id}
+                    onClick={() => { setSelectedImage(i); setMobileZoomScale(1); setMobileZoomPos({ x: 0, y: 0 }); }}
+                    className={`w-14 h-18 shrink-0 overflow-hidden snap-start transition-all duration-300 ${
+                      selectedImage === i
+                        ? 'ring-1 ring-gold ring-offset-1'
+                        : 'opacity-50'
+                    }`}
+                  >
+                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="md:sticky md:top-[90px] md:self-start animate-fade-up" style={{ animationDelay: '150ms' }}>
+          <div ref={detailsRef} className="md:sticky md:top-[90px] md:self-start">
             {product.category_name && (
               <Link
                 to={`/category/${product.category_slug}`}
@@ -136,15 +309,13 @@ export default function ProductDetail() {
             <button
               onClick={handleAdd}
               disabled={!product.in_stock || cartLoading}
-              className={`w-full mt-8 py-4 text-[11px] tracking-[0.25em] uppercase font-light transition-all duration-500 ${
-                added
-                  ? 'bg-gold text-white'
-                  : product.in_stock
-                    ? 'bg-primary text-white hover:bg-gold'
-                    : 'bg-surface text-secondary cursor-not-allowed'
+              className={`w-full mt-8 py-4 min-h-[52px] text-[11px] tracking-[0.25em] uppercase font-light transition-all duration-500 ${
+                product.in_stock
+                  ? 'bg-primary text-white hover:bg-gold active:bg-gold'
+                  : 'bg-surface text-secondary cursor-not-allowed'
               }`}
             >
-              {added ? t('product.addedToBag') : product.in_stock ? t('product.addToBag') : t('product.soldOut')}
+              {product.in_stock ? t('product.addToBag') : t('product.soldOut')}
             </button>
 
             <div className="mt-10 border-t border-border">

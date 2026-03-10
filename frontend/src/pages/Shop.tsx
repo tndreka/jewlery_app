@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { api } from '../lib/api';
 import { useI18n } from '../i18n';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import type { Product, Category } from '../types';
 import ProductGrid from '../components/product/ProductGrid';
 
@@ -17,17 +19,21 @@ export default function Shop() {
   const page = parseInt(searchParams.get('page') || '1');
   const limit = 24;
 
+  const headerRef = useScrollAnimation<HTMLDivElement>({ animation: 'fadeUp' });
+
   useEffect(() => {
     api.getCategories().then(cats => setCategories(cats.filter(c => c.product_count > 0)));
   }, []);
 
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     const params: Record<string, string> = { limit: String(limit), offset: String((page - 1) * limit) };
     if (activeCategory) params.category = activeCategory;
-    api.getProducts(params)
-      .then(data => { setProducts(data.products); setTotal(data.total); })
-      .finally(() => setLoading(false));
+    (async () => {
+      const data = await api.getProducts(params);
+      if (!cancelled) { setProducts(data.products); setTotal(data.total); setLoading(false); }
+    })();
+    return () => { cancelled = true; };
   }, [activeCategory, page]);
 
   const setCategory = (cat: string) => {
@@ -40,13 +46,17 @@ export default function Shop() {
 
   return (
     <div className="pt-[70px]">
+      <Helmet>
+        <title>{activeCategory ? `${activeCategory.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} — ` : ''}Shop | Argjendari Kadriu</title>
+        <meta name="description" content="Browse our collection of handcrafted gold jewelry. Rings, necklaces, bracelets, earrings and sets." />
+      </Helmet>
       <div className="bg-cream py-14 md:py-20">
-        <div className="text-center">
-          <p className="text-[10px] tracking-[0.5em] uppercase text-secondary font-light animate-fade-up">{t('shop.collection')}</p>
-          <h1 className="mt-3 font-display text-[32px] md:text-[48px] font-light tracking-[0.05em] animate-fade-up" style={{ animationDelay: '100ms' }}>
+        <div ref={headerRef} className="text-center">
+          <p className="text-[10px] tracking-[0.5em] uppercase text-secondary font-light">{t('shop.collection')}</p>
+          <h1 className="mt-3 font-display text-[32px] md:text-[48px] font-light tracking-[0.05em]">
             {activeCategory ? activeCategory.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : t('shop.allJewelry')}
           </h1>
-          <p className="mt-3 text-[11px] text-secondary font-light tracking-wide animate-fade-up" style={{ animationDelay: '200ms' }}>
+          <p className="mt-3 text-[11px] text-secondary font-light tracking-wide">
             {total} {total !== 1 ? t('shop.pieces') : t('shop.piece')}
           </p>
         </div>

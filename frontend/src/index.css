@@ -17,6 +17,22 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  html.lenis, html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
   body {
     font-family: var(--font-sans);
     color: var(--color-primary);
@@ -26,9 +42,26 @@
     background: #fff;
   }
 
+  /* Hide default cursor when custom cursor is active */
+  @media (pointer: fine) {
+    body.custom-cursor-active {
+      cursor: none;
+    }
+    body.custom-cursor-active a,
+    body.custom-cursor-active button,
+    body.custom-cursor-active [role="button"] {
+      cursor: none;
+    }
+  }
+
   ::selection {
     background: var(--color-gold);
     color: #fff;
+  }
+
+  /* Safe area for notched phones */
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
   }
 
   /* Smooth scrollbar */
@@ -143,4 +176,105 @@
 .link-reveal:hover::after {
   transform: scaleX(1);
   transform-origin: left;
+}
+
+/* Custom cursor */
+.custom-cursor-dot {
+  position: fixed;
+  top: -4px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-gold);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform;
+  mix-blend-mode: difference;
+}
+
+.custom-cursor-ring {
+  position: fixed;
+  top: -20px;
+  left: -20px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-gold);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  will-change: transform;
+  opacity: 0.5;
+  transition: width 0.2s, height 0.2s, top 0.2s, left 0.2s, opacity 0.2s, border-color 0.2s;
+}
+
+.custom-cursor-ring.cursor-hover-active {
+  width: 60px;
+  height: 60px;
+  top: -30px;
+  left: -30px;
+  border-color: var(--color-gold-light);
+  opacity: 0.8;
+}
+
+/* Shimmer loading skeleton */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 25%,
+    var(--color-cream) 50%,
+    var(--color-surface) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Product card second image overlay */
+.product-card-images .product-card-secondary {
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.product-card-images:hover .product-card-secondary {
+  opacity: 1;
+}
+
+/* Quick view overlay */
+.quick-view-trigger {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .quick-view-trigger {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Product detail zoom */
+.product-zoom-container {
+  overflow: hidden;
+  cursor: zoom-in;
+}
+.product-zoom-container img {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.product-zoom-container.zoomed {
+  cursor: zoom-out;
+}
+.product-zoom-container.zoomed img {
+  transform: scale(2);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .custom-cursor-dot,
+  .custom-cursor-ring {
+    display: none !important;
+  }
 }

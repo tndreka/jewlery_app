@@ -1,22 +1,39 @@
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
 import { ProductModel } from '../models/product';
 import { ImageModel } from '../models/image';
 
 const router = Router();
 
+const listSchema = z.object({
+  category: z.string().max(100).optional(),
+  material: z.string().max(100).optional(),
+  min_price: z.coerce.number().min(0).optional(),
+  max_price: z.coerce.number().min(0).optional(),
+  search: z.string().max(200).optional(),
+  featured: z.enum(['true', 'false']).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+  offset: z.coerce.number().int().min(0).optional(),
+});
+
 // GET /api/products — list with filters
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { category, material, min_price, max_price, search, featured, limit, offset } = req.query as Record<string, string | undefined>;
+    const parsed = listSchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid query parameters' });
+      return;
+    }
+    const { category, material, min_price, max_price, search, featured, limit, offset } = parsed.data;
     const result = await ProductModel.findAll({
-      category: category as string,
-      material: material as string,
-      minPrice: min_price ? parseFloat(min_price as string) : undefined,
-      maxPrice: max_price ? parseFloat(max_price as string) : undefined,
-      search: search as string,
+      category,
+      material,
+      minPrice: min_price,
+      maxPrice: max_price,
+      search,
       featured: featured === 'true',
-      limit: limit ? parseInt(limit as string) : undefined,
-      offset: offset ? parseInt(offset as string) : undefined,
+      limit,
+      offset,
     });
     res.json(result);
   } catch (err) {
@@ -39,12 +56,12 @@ router.get('/featured', async (_req: Request, res: Response) => {
 // GET /api/products/search?q=
 router.get('/search', async (req: Request, res: Response) => {
   try {
-    const q = req.query.q as string | undefined;
-    if (!q || q.length < 2) {
+    const q = z.string().max(200).optional().safeParse(req.query.q);
+    if (!q.success || !q.data || q.data.length < 2) {
       res.json({ products: [], total: 0 });
       return;
     }
-    const result = await ProductModel.findAll({ search: q, limit: 10 });
+    const result = await ProductModel.findAll({ search: q.data, limit: 10 });
     res.json(result);
   } catch (err) {
     console.error('Error searching:', err);

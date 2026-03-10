@@ -3,6 +3,8 @@ services:
     build: ./backend
     restart: unless-stopped
     env_file: ./backend/.env
+    volumes:
+      - uploads:/app/public/uploads
     ports:
       - "3001:3001"
     depends_on:
@@ -13,6 +15,10 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     depends_on:
       - backend
 
@@ -28,5 +34,32 @@ services:
     ports:
       - "5432:5432"
 
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+
+  db-backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PGHOST: db
+      PGUSER: jewelry
+      PGPASSWORD: ${DB_PASSWORD:-changeme}
+      PGDATABASE: jewelry_db
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      /bin/sh -c 'while true; do
+        pg_dump -Fc > /backups/jewelry_db_$$(date +%Y%m%d_%H%M%S).dump;
+        find /backups -name "*.dump" -mtime +7 -delete;
+        sleep 86400;
+      done'
+
 volumes:
   pgdata:
+  uploads:

@@ -75,6 +75,10 @@ export default function Footer() {
           <p className="text-[10px] text-white/20 tracking-[0.15em]">
             &copy; {new Date().getFullYear()} Argjendari Kadriu. {t('footer.rights')}
           </p>
+          <div className="flex gap-6">
+            <Link to="/privacy" className="text-[10px] text-white/20 tracking-[0.15em] hover:text-white/40 transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="text-[10px] text-white/20 tracking-[0.15em] hover:text-white/40 transition-colors">Terms</Link>
+          </div>
           <p className="text-[10px] text-white/20 tracking-[0.15em]">
             {t('footer.handcrafted')}
           </p>

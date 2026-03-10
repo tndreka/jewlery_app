@@ -28,9 +28,20 @@ export default function Checkout() {
     );
   }
 
+  const validateForm = () => {
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (form.customer_name.trim().length < 2) return t('checkout.error');
+    if (!emailRe.test(form.customer_email)) return 'Please enter a valid email address';
+    if (form.customer_phone && !/^[+\d\s()-]{6,20}$/.test(form.customer_phone)) return 'Please enter a valid phone number';
+    if (form.shipping_address.trim().length < 5) return 'Please enter a complete shipping address';
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    const validationError = validateForm();
+    if (validationError) { setError(validationError); return; }
     setSubmitting(true);
     try {
       const order = await api.placeOrder(form);

@@ -16,4 +16,11 @@ export const env = {
   },
   apiSecret: process.env.API_SECRET!,
   siteUrl: process.env.SITE_URL || 'http://localhost:5173',
+  email: {
+    host: process.env.SMTP_HOST || '',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    from: process.env.EMAIL_FROM || 'noreply@argjendarikadriu.com',
+  },
 };

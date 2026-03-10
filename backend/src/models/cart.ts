@@ -9,13 +9,14 @@ export interface CartItem {
   product_name?: string;
   price?: number;
   sale_price?: number;
+  in_stock?: boolean;
   image_url?: string;
 }
 
 export const CartModel = {
   async getBySession(sessionId: string): Promise<CartItem[]> {
     const result = await query(
-      `SELECT ci.*, p.name as product_name, p.price, p.sale_price,
+      `SELECT ci.*, p.name as product_name, p.price, p.sale_price, p.in_stock,
         (SELECT url FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) as image_url
        FROM cart_items ci
        JOIN products p ON ci.product_id = p.id

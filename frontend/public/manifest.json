@@ -1,0 +1,17 @@
+{
+  "name": "Argjendari Kadriu",
+  "short_name": "AK Jewelry",
+  "description": "Fine gold jewelry, handcrafted in Albania",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a1a1a",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

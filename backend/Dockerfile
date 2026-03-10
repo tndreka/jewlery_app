@@ -11,5 +11,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY migrations ./migrations
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x entrypoint.sh
 EXPOSE 3001
-CMD ["node", "dist/index.js"]
+CMD ["./entrypoint.sh"]

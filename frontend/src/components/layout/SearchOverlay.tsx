@@ -19,19 +19,23 @@ export default function SearchOverlay({ isOpen, onClose }: Props) {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reset on close
       setQuery('');
       setResults([]);
     }
   }, [isOpen]);
 
   useEffect(() => {
-    if (query.length < 2) { setResults([]); return; }
+    if (query.length < 2) {
+      if (results.length > 0) setResults([]); // eslint-disable-line react-hooks/set-state-in-effect
+      return;
+    }
     const timeout = setTimeout(async () => {
       const { products } = await api.searchProducts(query);
       setResults(products);
     }, 300);
     return () => clearTimeout(timeout);
-  }, [query]);
+  }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isOpen) return null;
 

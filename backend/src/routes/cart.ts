@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { z } from 'zod';
 import { CartModel } from '../models/cart';
 import { v4 as uuid } from 'uuid';
 
@@ -38,12 +39,18 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/items', async (req: Request, res: Response) => {
   try {
     const sessionId = getSessionId(req, res);
-    const { product_id, variant_id, quantity } = req.body;
-    if (!product_id) {
-      res.status(400).json({ error: 'product_id required' });
+    const schema = z.object({
+      product_id: z.string().uuid(),
+      variant_id: z.string().uuid().nullable().optional(),
+      quantity: z.number().int().min(1).max(50).optional().default(1),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid cart item data' });
       return;
     }
-    const item = await CartModel.addItem(sessionId, product_id, variant_id || null, quantity || 1);
+    const { product_id, variant_id, quantity } = parsed.data;
+    const item = await CartModel.addItem(sessionId, product_id, variant_id || null, quantity);
     res.status(201).json(item);
   } catch (err) {
     console.error('Error adding to cart:', err);
