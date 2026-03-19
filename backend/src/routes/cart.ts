@@ -10,10 +10,12 @@ function getSessionId(req: Request, res: Response): string {
   let sessionId = req.cookies?.cart_session as string | undefined;
   if (!sessionId) {
     sessionId = uuid();
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('cart_session', sessionId, {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: 'lax',
+      sameSite: isProd ? 'none' : 'lax',
+      secure: isProd,
     });
   }
   return sessionId;
