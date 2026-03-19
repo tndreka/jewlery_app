@@ -52,7 +52,11 @@ async function main() {
     try {
       const bot = createBot();
       setBotInstance(bot);
-      bot.start({ onStart: () => console.log('Telegram bot started') });
+      bot.start({ onStart: () => console.log('Telegram bot started') })
+        .catch((err: unknown) => {
+          console.warn('Telegram bot failed to start:', err);
+          console.warn('Server will continue running without Telegram bot.');
+        });
     } catch (err) {
       console.warn('Telegram bot failed to start:', err);
     }
