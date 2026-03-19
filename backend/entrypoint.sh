@@ -13,7 +13,10 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   for (const file of files) {
     const sql = fs.readFileSync(path.join(dir, file), 'utf-8');
     console.log('Migration:', file);
-    await pool.query(sql);
+    try { await pool.query(sql); } catch(e) {
+      if (e.code === '42P07' || e.code === '42710') { console.log('  (already exists, skipping)'); }
+      else throw e;
+    }
   }
   await pool.end();
   console.log('Migrations complete.');
