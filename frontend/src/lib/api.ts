@@ -1,6 +1,7 @@
 import type { Product, Category, Cart, CartItem, Order } from '../types';
 
-const BASE = '/api';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://argjendari-kadriu.onrender.com' : '');
+const BASE = API_URL ? `${API_URL}/api` : '/api';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${url}`, {
