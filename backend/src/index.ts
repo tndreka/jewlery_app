@@ -20,7 +20,17 @@ async function main() {
 
   // Middleware
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-  app.use(cors({ origin: env.siteUrl, credentials: true }));
+  app.use(cors({
+    origin: (origin, callback) => {
+      const allowed = [env.siteUrl, 'http://localhost:5173', 'http://localhost:5174'];
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true
+  }));
   app.use(express.json({ limit: '10kb' }));
   app.use(cookieParser());
 
