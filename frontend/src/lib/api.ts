@@ -3,13 +3,34 @@ import type { Product, Category, Cart, CartItem, Order } from '../types';
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://argjendari-kadriu.onrender.com' : '');
 const BASE = API_URL ? `${API_URL}/api` : '/api';
 
+// Cart session stored in localStorage to avoid cross-site cookie issues on mobile
+function getCartSession(): string | null {
+  return localStorage.getItem('cart_session');
+}
+function setCartSession(id: string): void {
+  localStorage.setItem('cart_session', id);
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const session = getCartSession();
+  if (session) {
+    headers['x-cart-session'] = session;
+  }
+
   const res = await fetch(`${BASE}${url}`, {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options,
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+  // Save cart session from response header
+  const newSession = res.headers.get('x-cart-session');
+  if (newSession) {
+    setCartSession(newSession);
+  }
+
   return res.json();
 }
 

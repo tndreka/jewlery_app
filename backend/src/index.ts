@@ -29,7 +29,9 @@ async function main() {
         callback(new Error('Not allowed by CORS'));
       }
     },
-    credentials: true
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'x-cart-session'],
+    exposedHeaders: ['x-cart-session'],
   }));
   app.use(express.json({ limit: '10kb' }));
   app.use(cookieParser());

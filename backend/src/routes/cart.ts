@@ -5,19 +5,23 @@ import { v4 as uuid } from 'uuid';
 
 const router = Router();
 
-// Get or create session ID from cookie
+// Get or create session ID from header, cookie, or generate new
 function getSessionId(req: Request, res: Response): string {
-  let sessionId = req.cookies?.cart_session as string | undefined;
+  // Prefer header (works cross-origin on mobile), fall back to cookie
+  let sessionId = (req.headers['x-cart-session'] as string) || req.cookies?.cart_session;
   if (!sessionId) {
     sessionId = uuid();
-    const isProd = process.env.NODE_ENV === 'production';
-    res.cookie('cart_session', sessionId, {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: isProd ? 'none' : 'lax',
-      secure: isProd,
-    });
   }
+  // Always set cookie (works on desktop same-site)
+  const isProd = process.env.NODE_ENV === 'production';
+  res.cookie('cart_session', sessionId, {
+    httpOnly: true,
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    sameSite: isProd ? 'none' : 'lax',
+    secure: isProd,
+  });
+  // Also send via header (works cross-origin on mobile)
+  res.setHeader('x-cart-session', sessionId);
   return sessionId;
 }
 

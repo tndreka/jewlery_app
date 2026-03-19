@@ -31,7 +31,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     const { customer_name, customer_email, customer_phone, shipping_address } = parsed.data;
 
-    const sessionId = req.cookies?.cart_session as string | undefined;
+    const sessionId = (req.headers['x-cart-session'] as string) || req.cookies?.cart_session;
     if (!sessionId) {
       res.status(400).json({ error: 'Cart is empty' });
       return;
