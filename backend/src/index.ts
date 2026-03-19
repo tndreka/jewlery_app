@@ -53,6 +53,17 @@ async function main() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // DB debug (temporary)
+  app.get('/api/db-check', async (_req, res) => {
+    try {
+      const { pool } = require('./config/database');
+      const result = await pool.query('SELECT count(*) FROM categories');
+      res.json({ ok: true, categories: result.rows[0].count, dbUrl: env.databaseUrl?.replace(/:[^@]+@/, ':***@') });
+    } catch (err: any) {
+      res.json({ ok: false, error: err.message, code: err.code });
+    }
+  });
+
   // Error handling
   app.use(notFound);
   app.use(errorHandler);
