@@ -90,11 +90,10 @@ export function useParallax<T extends HTMLElement>(speed = 0.5) {
     const el = ref.current;
     if (!el) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // Skip parallax on touch devices — causes jank
-    if (window.matchMedia('(pointer: coarse)').matches) return;
 
+    const isTouch = window.matchMedia('(pointer: coarse)').matches;
     const tween = gsap.to(el, {
-      yPercent: speed * 20,
+      yPercent: (isTouch ? speed * 0.4 : speed) * 20,
       ease: 'none',
       scrollTrigger: {
         trigger: el.parentElement,
